@@ -20,9 +20,6 @@ public class Application {
 		context.start();
 		KafkaConsumer kafkaConsumer = context.getBean("kafkaConsumer", KafkaConsumer.class);
 		ConsumerConnector consumer = kafkaConsumer.createConsumer();
-//		kafkaConsumer.consumeList(consumer);
-//		kafkaConsumer.consumeSingle(consumer);
-//		kafkaConsumer.consumeTopicList(consumer, new String[]{KafkaProducer.TOPIC,KafkaProducer.TOPIC2});
 		Map<String, Integer> topicCountMap = new HashMap<String, Integer>();
 		topicCountMap.put(KafkaProducer.TOPIC, new Integer(1));// 一次从主题中获取一个数据  
 		topicCountMap.put(KafkaProducer.TOPIC2, new Integer(1));

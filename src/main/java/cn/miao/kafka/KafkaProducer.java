@@ -32,7 +32,7 @@ public class KafkaProducer<K, T> {
 		producer.send(new KeyedMessage<K, T>(TOPIC4, k, t));
 	}
 
-	public static void main(String[] args) {
+	/*public static void main(String[] args) {
 		String key = "key";
 		Person p = new Person();
 		p.setName("name");
@@ -43,5 +43,5 @@ public class KafkaProducer<K, T> {
 		for (int i = 0; i < 5; i++) {
 			new KafkaProducer<String, Person>().produce(key + i, p);
 		}
-	}
+	}*/
 }

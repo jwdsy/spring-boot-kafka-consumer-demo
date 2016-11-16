@@ -2,6 +2,7 @@ package cn.miao.handler;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import cn.miao.kafka.Person;
@@ -10,10 +11,17 @@ import cn.miao.kafka.Person;
 public class TopicHandler extends MessageHandler<String, Person>{
 	
 	private static final Logger log = LoggerFactory.getLogger(TopicHandler.class);
+	
+	public static String topic;
+	
+	@Value("${kafka.topic.topic}")
+	public void setTopic(String topic) {
+		TopicHandler.topic = topic;
+	}
 
 	@Override
 	protected void register() {
-		MessageFactory.regMessageHandler("person1", this);
+		MessageFactory.regMessageHandler(topic, this);
 	}
 
 	@Override

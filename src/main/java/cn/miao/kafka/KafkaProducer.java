@@ -3,6 +3,7 @@ package cn.miao.kafka;
 import java.util.Date;
 import java.util.Properties;
 
+import cn.miao.handler.TopicHandler;
 import kafka.javaapi.producer.Producer;
 import kafka.producer.KeyedMessage;
 import kafka.producer.ProducerConfig;
@@ -10,11 +11,6 @@ import kafka.producer.ProducerConfig;
 public class KafkaProducer<K, T> {
 
 	private final Producer<K, T> producer;
-
-	public final static String TOPIC = "person1";
-	public final static String TOPIC2 = "person2";
-	public final static String TOPIC3 = "kafkaMessageServiceTopic2";
-	public final static String TOPIC4 = "kafkaMessageServiceTopic4";
 
 	private KafkaProducer() {
 		Properties props = new Properties();
@@ -27,13 +23,10 @@ public class KafkaProducer<K, T> {
 	}
 
 	void produce(K k, T t) {
-		producer.send(new KeyedMessage<K, T>(TOPIC, k, t));
-		producer.send(new KeyedMessage<K, T>(TOPIC2, k, t));
-//		producer.send(new KeyedMessage<K, T>(TOPIC3, k, t));
-//		producer.send(new KeyedMessage<K, T>(TOPIC4, k, t));
+		producer.send(new KeyedMessage<K, T>("topic", k, t));
 	}
 
-	/*public static void main(String[] args) {
+	public static void main(String[] args) {
 		String key = "key";
 		Person p = new Person();
 		p.setName("name");
@@ -44,7 +37,7 @@ public class KafkaProducer<K, T> {
 		for (int i = 0; i < 5; i++) {
 			new KafkaProducer<String, Person>().produce(key, p);
 		}
-	}*/
+	}
 	
 }
 

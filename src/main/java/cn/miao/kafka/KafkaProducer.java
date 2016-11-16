@@ -23,7 +23,7 @@ public class KafkaProducer<K, T> {
 	}
 
 	void produce(K k, T t) {
-		producer.send(new KeyedMessage<K, T>(TopicHandler.topic, k, t));
+		producer.send(new KeyedMessage<K, T>("topic", k, t));
 	}
 
 	public static void main(String[] args) {
@@ -35,7 +35,6 @@ public class KafkaProducer<K, T> {
 		p.setSex("男");
 		p.setBirthday(new Date());
 		for (int i = 0; i < 5; i++) {
-//			new KafkaProducer<String, Object>().produce(key, JSON.toJSON(p));
 			new KafkaProducer<String, Person>().produce(key, p);
 		}
 	}

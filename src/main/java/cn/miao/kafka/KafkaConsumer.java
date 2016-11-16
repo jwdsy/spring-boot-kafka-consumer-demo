@@ -62,7 +62,7 @@ public class KafkaConsumer {
 		ConsumerConnector consumer = this.createConsumer();
 		Map<String, Integer> topicCountMap = new HashMap<String, Integer>();
 		for(String topic : kafkaTopic){
-			topicCountMap.put(topic, kafkaThread);// 一次从主题中获取一个数据  
+			topicCountMap.put(topic, kafkaThread);// 一次从主题中获取kafkaThread个数据，用kafkaThread个线程
 		}
 		EntityDecoder<K> keyDecoder = new EntityDecoder<K>();
 		EntityDecoder<T> valueDecoder = new EntityDecoder<T>();
@@ -73,13 +73,11 @@ public class KafkaConsumer {
 		// create list of 4 threads to consume from each of the partitions 
 		ExecutorService executor = Executors.newFixedThreadPool(kafkaTopic.length);
 
-		// consume the messages in the threads
 		while (iterator.hasNext()) {
 			final List<KafkaStream<K, T>> streams = iterator.next();
 			executor.submit(new Runnable() {
 				public void run() {
 					for (KafkaStream<K, T> stream : streams) {
-						// process message (msgAndMetadata.message())
 						ConsumerIterator<K, T> it = stream.iterator();
 						while (it.hasNext()) {
 							MessageAndMetadata<K, T> mm = it.next();
@@ -87,7 +85,6 @@ public class KafkaConsumer {
 							K key = mm.key();
 							T message = mm.message();
 							long offset = it.kafka$consumer$ConsumerIterator$$consumedOffset();
-							//System.err.println("Thread.currentThread().getId()："+Thread.currentThread().getId()+"　offset："+offset+"　"+"topic："+topic+"　"+"key："+key+"　"+"message："+message+"　");
 							
 							@SuppressWarnings("unchecked")
 							MessageHandler<K, T> handler = MessageFactory.getMessageHandler(topic);

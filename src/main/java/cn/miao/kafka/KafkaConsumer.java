@@ -26,7 +26,7 @@ import kafka.message.MessageAndMetadata;
 @Component
 public class KafkaConsumer {
 	
-	private static final Logger log = LoggerFactory.getLogger(KafkaConsumer.class);
+	private final static Logger logger = LoggerFactory.getLogger(KafkaConsumer.class);
 	
 	@Value("${kafka.thread}")
 	private Integer kafkaThread;
@@ -83,13 +83,20 @@ public class KafkaConsumer {
 							K key = mm.key();
 							T message = mm.message();
 							long offset = it.kafka$consumer$ConsumerIterator$$consumedOffset();
-							
-							@SuppressWarnings("unchecked")
-							MessageHandler<K, T> handler = MessageFactory.getMessageHandler(topic);
-							if (handler != null) {
-								handler.handlerMessage(key, message, offset);
-							}else{
-								log.error("未找到topic[{}]相应的处理器！", topic);
+
+							try {
+								@SuppressWarnings("unchecked")
+								MessageHandler<K, T> handler = MessageFactory.getMessageHandler(topic);
+								if (handler != null) {
+									System.err.println(1/0);
+									logger.error("topic[{}]相应的处理器是{}，offset：{}，key：{}，message：{}", topic, handler.getClass().getName(), offset, key, message);
+									handler.handlerMessage(key, message, offset);
+								}else{
+									logger.error("未找到topic[{}]相应的处理器！", topic);
+								}
+							} catch (Exception e) {
+								logger.error("消息处理遇到异常了", e);
+								continue;
 							}
 							
 						}

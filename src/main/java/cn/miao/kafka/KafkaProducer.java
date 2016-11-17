@@ -34,9 +34,9 @@ public class KafkaProducer<K, T> {
 		p.setPhone("13331189071");
 		p.setSex("男");
 		p.setBirthday(new Date());
-		for (int i = 0; i < 5; i++) {
+//		for (int i = 0; i < 5; i++) {
 			new KafkaProducer<String, Person>().produce(key, p);
-		}
+//		}
 	}
 	
 }

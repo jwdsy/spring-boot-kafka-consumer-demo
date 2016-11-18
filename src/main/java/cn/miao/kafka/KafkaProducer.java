@@ -23,19 +23,28 @@ public class KafkaProducer<K, T> {
 	}
 
 	void produce(K k, T t) {
-		producer.send(new KeyedMessage<K, T>("topic", k, t));
+		producer.send(new KeyedMessage<K, T>("topic3", k, t));
+	}
+	
+	void produce(String topic ,K k, T t) {
+		producer.send(new KeyedMessage<K, T>(topic, k, t));
 	}
 
 	public static void main(String[] args) {
-		String key = "key";
-		Person p = new Person();
-		p.setName("name");
-		p.setAge(10);
-		p.setPhone("13331189071");
-		p.setSex("男");
-		p.setBirthday(new Date());
-		for (int i = 0; i < 5; i++) {
-			new KafkaProducer<String, Person>().produce(key, p);
+		Integer partitionNum = 8;//该配置是让消息均匀的发送到kafka的各个partitions上（消息存放的partitions在kafka server.properties配置文件中的num.partitions）
+		int messageNum = 16;//本次发送消息个数
+		String[] topics = {"zs2","ls2"};//消息发送到的topic列表
+		Person message = new Person();
+		message.setName("name");
+		message.setAge(10);
+		message.setPhone("13331189071");
+		message.setSex("男");
+		message.setBirthday(new Date());
+		for (int i = 0; i < messageNum; i++) {
+			String key = new Integer(i%partitionNum).toString();//参数key就是消息发送到kafka的partition编号
+			for(String topic : topics){
+				new KafkaProducer<String, Person>().produce(topic, key, message);
+			}
 		}
 	}
 	

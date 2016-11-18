@@ -9,6 +9,7 @@ import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,6 +21,7 @@ import cn.miao.handler.TopicHandler;
 import kafka.consumer.ConsumerConfig;
 import kafka.consumer.ConsumerIterator;
 import kafka.consumer.KafkaStream;
+import kafka.consumer.Whitelist;
 import kafka.javaapi.consumer.ConsumerConnector;
 import kafka.message.MessageAndMetadata;
 
@@ -27,6 +29,7 @@ import kafka.message.MessageAndMetadata;
 public class KafkaConsumer {
 	
 	private final static Logger logger = LoggerFactory.getLogger(KafkaConsumer.class);
+
 	
 	@Value("${kafka.thread}")
 	private Integer kafkaThread;
@@ -55,6 +58,37 @@ public class KafkaConsumer {
 		ConsumerConfig config = new ConsumerConfig(props);
 		ConsumerConnector consumer = kafka.consumer.Consumer.createJavaConsumerConnector(config);
 		return consumer;
+	}
+	
+	private static final int NUMBER_OF_STREAMS = 4;//处理kafka消息开启的线程数，线程数最后与kafka配置的partition数量一致，如果太大，则有线程空闲，浪费，如果太少则有的线程处理消息会多一些，造成压力
+
+	public <K, T> void consume1() {
+		try {
+			EntityDecoder<K> kd = new EntityDecoder<K>();//消息key解码对象
+			EntityDecoder<T> td = new EntityDecoder<T>();//消息key编码对象
+			ConsumerConnector consumer = this.createConsumer();
+			Whitelist whitelist = new Whitelist(StringUtils.join(new String[] { "zs2", "ls2" }, "|"));//监控的topic名单，多个topic通过“|”链接
+			List<KafkaStream<byte[], byte[]>> streams = consumer.createMessageStreamsByFilter(whitelist, NUMBER_OF_STREAMS);
+			ExecutorService executor = Executors.newFixedThreadPool(streams.size());//通过线程池启动streams.size()个线程来处理消息
+			for (final KafkaStream<byte[], byte[]> stream : streams) {
+				executor.submit(new Runnable() {
+					public void run() {
+						for (MessageAndMetadata<byte[], byte[]> mm : stream) {
+							byte[] message = mm.message();
+							byte[] key = mm.key();
+							int partition = mm.partition();
+							long offset = mm.offset();
+							K k = kd.fromBytes(key);
+							T t = td.fromBytes(message);
+							String topic = mm.topic();
+							logger.error("当前线程是：{}，topic[{}]，partition：{}，offset：{}，key：{}，message：{}", Thread.currentThread().getId() ,topic, partition, offset, k, t);
+						}
+					}
+				});
+			}
+
+		} catch (Exception e) {
+		}
 	}
 
 	public <K, T> void consume() {
@@ -88,8 +122,7 @@ public class KafkaConsumer {
 								@SuppressWarnings("unchecked")
 								MessageHandler<K, T> handler = MessageFactory.getMessageHandler(topic);
 								if (handler != null) {
-									System.err.println(1/0);
-									logger.error("topic[{}]相应的处理器是{}，offset：{}，key：{}，message：{}", topic, handler.getClass().getName(), offset, key, message);
+									logger.error("当前线程是：{}，topic[{}]相应的处理器是{}，offset：{}，key：{}，message：{}", Thread.currentThread().getId() ,topic, handler.getClass().getName(), offset, key, message);
 									handler.handlerMessage(key, message, offset);
 								}else{
 									logger.error("未找到topic[{}]相应的处理器！", topic);

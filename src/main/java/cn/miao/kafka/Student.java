@@ -2,11 +2,8 @@ package cn.miao.kafka;
 
 import java.io.Serializable;
 
-public class Person implements Serializable {
+public class Student implements Serializable {
 
-	/**
-	 * @Fields serialVersionUID : TODO
-	 */
 	private static final long serialVersionUID = -527147018476148114L;
 
 	private String name;
@@ -39,7 +36,7 @@ public class Person implements Serializable {
 
 	@Override
 	public String toString() {
-		return "Person [name=" + name + ", age=" + age + ", sex=" + sex + "]";
+		return "Student [name=" + name + ", age=" + age + ", sex=" + sex + "]";
 	}
 
 }
